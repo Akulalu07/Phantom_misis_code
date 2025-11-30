@@ -1,0 +1,55 @@
+services:
+  traefik:
+    image: traefik:v3.6.2
+    container_name: traefik
+    restart: unless-stopped
+
+    networks:
+      - default
+
+    ports:
+      - '80:80'
+      - '443:443'
+
+    volumes:
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.letsencrypt.acme.email=w2v@protonmail.com'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+
+  redis:
+    image: redis:8.4.0
+    ports:
+      - '13394:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass ...
+    networks:
+      - default
+
+  backend:
+    image: ghcr.io/phantom-misis/backend:latest
+    container_name: backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    env_file: .env
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.portfolio-analyzer.rule=Host(`fcdc5ae656279f7ee87b25ea.duckdns.org`)'
+      - 'traefik.http.routers.portfolio-analyzer.entrypoints=websecure'
+      - 'traefik.http.routers.portfolio-analyzer.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.portfolio-analyzer.loadbalancer.server.port=8080'
+
+volumes:
+  letsencrypt:
+  redis_data:

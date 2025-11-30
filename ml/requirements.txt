@@ -1,0 +1,17 @@
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+torchaudio==2.5.1+cu121
+transformers==4.57.3
+datasets==4.4.1
+accelerate==1.10.1
+scikit-learn==1.6.1
+pandas==2.3.3
+numpy==1.26.3
+matplotlib==3.9.4
+fastapi==0.122.0
+uvicorn==0.38.0
+pydantic==2.12.5
+tqdm==4.67.1
+PyYAML==6.0.3
+requests==2.32.5
+safetensors==0.7.0
